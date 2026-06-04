@@ -5,7 +5,9 @@ import os
 
 app = Flask(__name__)
 CORS(app)
-
+@app.route("/")
+def home():
+    return "VisionCut Backend is running ✅"
 @app.route("/api/process", methods=["POST"])
 def process():
     file = request.files["file"]
