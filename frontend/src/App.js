@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-
+const [preview, setPreview] = useState(null);
+const [status, setStatus] = useState("");
 function App() {
   const [image, setImage] = useState(null);
   const [result, setResult] = useState(null);
@@ -16,22 +17,23 @@ function App() {
     formData.append("file", image);
 
     try {
-      setLoading(true);
+  setLoading(true);
+  setStatus("Processing image...");
 
-      const response = await axios.post(
-        "https://visioncut-backend-production.up.railway.app/api/process",
-        formData,
-        { responseType: "blob" }
-      );
+  const response = await axios.post(
+    "https://visioncut-backend-production.up.railway.app/api/process",
+    formData,
+    { responseType: "blob" }
+  );
 
-      const imageUrl = URL.createObjectURL(response.data);
-      setResult(imageUrl);
-    } catch (error) {
-      alert("حدث خطأ أثناء الاتصال بالسيرفر");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+  const imageUrl = URL.createObjectURL(response.data);
+  setResult(imageUrl);
+  setStatus("✅ Done! Image processed successfully.");
+} catch (error) {
+  setStatus("❌ Failed to process image. Please try again.");
+} finally {
+  setLoading(false);
+}
   };
 
   return (
@@ -58,13 +60,30 @@ function App() {
       </p>
 
       <input
-        type="file"
-        onChange={(e) => setImage(e.target.files[0])}
-        style={{
-          marginBottom: "15px"
-        }}
-      />
-
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
+    setResult(null);
+    setStatus("");
+  }}
+/>
+{preview && (
+  <div style={{ margin: "15px 0" }}>
+    <p style={{ marginBottom: "5px", color: "#555" }}>Preview</p>
+    <img
+      src={preview}
+      alt="preview"
+      style={{
+        width: "100%",
+        borderRadius: "8px",
+        border: "1px solid #ddd"
+      }}
+    />
+  </div>
+)}
       <button
         onClick={upload}
         disabled={loading}
@@ -81,7 +100,11 @@ function App() {
       >
         {loading ? "Processing..." : "Process Image"}
       </button>
-
+{status && (
+  <p style={{ marginTop: "15px", color: "#333" }}>
+    {status}
+  </p>
+)}
       {result && (
         <div style={{ marginTop: "20px" }}>
           <img
